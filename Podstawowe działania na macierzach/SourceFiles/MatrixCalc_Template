@@ -1,0 +1,110 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+// Struktura macierzy
+struct Matrix {
+    int rows;
+    int cols;
+    vector<vector<float>> data;
+
+    Matrix(int rows, int cols) : rows(rows), cols(cols), data(rows, vector<float> (cols)) {};
+};
+
+class matrixEquations {
+public:
+    // Wyświetlanie macierzy
+    void displayMatrix(const Matrix& matrix) {
+        cout << "Result: \n";
+        for (int i = 0; i < matrix.rows; i++){
+            cout << "| ";
+            for (int j = 0; j < matrix.cols; j++){
+                cout << matrix.data[i][j] << " ";
+            }
+            cout << "|\n";
+        }
+    };
+    // Dodawanie macierzy
+    Matrix addMatrix(Matrix& matrix1, Matrix& matrix2) {
+        if (matrix1.rows == matrix2.rows and matrix1.cols == matrix2.cols) {
+            Matrix resultMatrix(matrix1.rows, matrix1.cols);
+            for (int i = 0; i < matrix1.rows; i++) {
+                for (int j = 0; j < matrix1.cols; j++) {
+                    resultMatrix.data[i][j] = matrix1.data[i][j] + matrix2.data[i][j];
+                }
+            }
+            return resultMatrix;
+        }
+    };
+    // Odejmowanie macierzy
+    Matrix subtractMatrix(Matrix& matrix1, Matrix& matrix2) {
+        if (matrix1.rows == matrix2.rows and matrix1.cols == matrix2.cols) {
+            Matrix resultMatrix(matrix1.rows, matrix1.cols);
+            for (int i = 0; i < matrix1.rows; i++) {
+                for (int j = 0; j < matrix1.cols; j++) {
+                    resultMatrix.data[i][j] = matrix1.data[i][j] - matrix2.data[i][j];
+                }
+            }
+            return resultMatrix;
+        }
+    };
+    // Mnożenie macierzy
+    Matrix multiplyMatrix(Matrix& matrix1, Matrix& matrix2) {
+        if (matrix1.cols == matrix2.rows) {
+            Matrix resultMatrix(matrix1.rows, matrix2.cols);
+            for (int i = 0; i < matrix1.rows; i++) {
+                for (int j = 0; j < matrix2.cols; j++) {
+                    for (int k = 0; k < matrix1.cols; k++) {
+                        resultMatrix.data[i][j] = resultMatrix.data[i][j] + matrix1.data[i][k] * matrix2.data[k][j];
+                    }
+                }
+            }
+            return resultMatrix;
+        }
+    };
+    // Mnożenie macierzy przez stałą watrość
+    Matrix multuplyMatrix(Matrix& matrix, int value) {
+        Matrix resultMatrix(matrix.rows, matrix.cols);
+        for (int i = 0; i < matrix.rows; i++) {
+            for (int j = 0; j < matrix.cols; j++) {
+                resultMatrix.data[i][j] = matrix.data[i][j] * value;
+            }
+        }
+        return resultMatrix;
+    };
+    // Potęgowanie macierzy
+    Matrix powerOfMatrix(Matrix& matrix, int value) {
+        Matrix resultMatrix(matrix.rows, matrix.cols);
+        resultMatrix = matrix;
+        for (int k = 1; k < value; k++) {
+            for (int i = 0; i < matrix.rows; i++) {
+                for (int j = 0; j < matrix.cols; j++) {
+                    resultMatrix.data[i][j] = resultMatrix.data[i][j] * matrix.data[i][j];
+                }
+            }
+        }
+        return resultMatrix;
+    };
+};
+
+int main(){
+    matrixEquations calc;
+
+    Matrix matrixA(3, 3);
+    matrixA.data = {
+        {1,2,3},
+        {4,5,6},
+        {7,8,9}
+    };
+
+    Matrix matrixB(3, 3);
+    matrixB.data = {
+        {3,2,1},
+        {6,5,4},
+        {9,8,7}
+    };
+
+    calc.displayMatrix(calc.multiplyMatrix(matrixA, matrixB));
+    return 0;
+}
