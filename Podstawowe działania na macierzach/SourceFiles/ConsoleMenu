@@ -1,0 +1,42 @@
+#include "MatrixCalc.cpp"
+
+class ConsoleMenu {
+public:
+	// Funkcja tworząca nową macierz
+	void createMatrix(string matrixName, int rows, int cols){
+
+	};
+	// Funkcja kopiująca macierz z A do B
+	void copyMatrix(Matrix& matrix) {
+
+	};
+	// Funkcja zmiany wartości danej macierzy
+	void editMatrix() {
+
+	};
+	// Funkcaj wyświetlająca nazwy stworzonych macierzy
+	void listMatrices() {
+
+	};
+	// Funkcja usuwająca pojedynczy macierz
+	void deleteMatrix() {
+
+	};
+	// Funkcja usuwająca wszystkie macierze
+	void deleteMatraces() {
+
+	};
+	// Main Menu
+	void mainMenu() {
+
+	};
+	// Menu działań
+	void equationsMenu() {
+
+	};
+};
+
+int main() {
+
+	return 0;
+};
