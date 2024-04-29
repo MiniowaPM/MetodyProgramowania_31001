@@ -86,25 +86,74 @@ public:
         }
         return resultMatrix;
     };
+    // Macierz transponowana
+    Matrix transposeMatrix(Matrix& matrix) {
+        Matrix resultMatrix(matrix.cols, matrix.rows);
+        for (int i = 0; i < matrix.rows; i++) {
+            for (int j = 0; j < matrix.cols; j++) {
+                resultMatrix.data[i][j] = matrix.data[j][i];
+            }
+        }
+        return resultMatrix;
+    };
+    // Wyznacznik macierzy - Algorytm Laplacea
+    float detMatrix(Matrix& matrix) {
+        if (matrix.cols != matrix.rows) {
+            cout << "Macierz nie jest kwadratowa";
+            return 0;
+        };
+        if (matrix.cols == 2) {
+            return matrix.data[0][0] * matrix.data[1][1] - matrix.data[0][1] * matrix.data[1][0];
+        }
+        else {
+            float cumulativeSum = 0, sign = 1, determinant;
+            for (int colNum = 0; colNum < matrix.cols; colNum++) {
+                for (int rowNum = 0; rowNum < matrix.rows; rowNum++){
+                    // Funkcja pomocnicza tworząca pod macierz o stopień niższą
+                    Matrix subMatrix = findSubMatrix(matrix, rowNum, colNum);
+                    determinant = detMatrix(subMatrix);
+                    cumulativeSum += matrix.data[0][colNum] * determinant * sign; // colNum przekracza wartość 
+                    sign = -sign;
+                }
+            }
+            return cumulativeSum;
+        }
+    };
+    Matrix findSubMatrix(Matrix& matrix, int skipRow, int skipCol) {
+        Matrix subMatrix(matrix.rows - 1, matrix.cols - 1);
+        int countRows = 0;
+        for (int i = 0; i < matrix.rows; i++) {
+            if (i == skipRow) continue;
+            int countCols = 0;
+            for (int j = 0; j < matrix.cols; j++) {
+                if (j == skipCol) continue;
+                    subMatrix.data[countRows][countCols] = matrix.data[i][j];
+                    countCols++;
+            }
+            countRows++;
+        }
+        return subMatrix;
+    };
+    // Macierz odwrotna
+    Matrix inverseMatrix(Matrix& matrix) {
+        Matrix resultMatrix(matrix.rows, matrix.cols);
+        Matrix transposedMatrix = transposeMatrix(matrix);
+        float det = detMatrix(matrix);
+        for (int i = 0; i < matrix.rows; i++){
+            for (int j = 0; j < matrix.cols; j++)
+            {
+                resultMatrix.data[i][j] = 1 / det * transposedMatrix.data[i][j];
+            }
+        }
+        return resultMatrix;
+    };
+    // Rząd macierzu - DO ZROBIENIA
+    int rankMatrix(Matrix& matrix) {
+        int rank = 0;
+        for (int i = 0; i < matrix.rows; i++){
+            for (int j = 0; j < matrix.cols; j++){
+
+            }
+        }
+    };
 };
-
-int main(){
-    matrixEquations calc;
-
-    Matrix matrixA(3, 3);
-    matrixA.data = {
-        {1,2,3},
-        {4,5,6},
-        {7,8,9}
-    };
-
-    Matrix matrixB(3, 3);
-    matrixB.data = {
-        {3,2,1},
-        {6,5,4},
-        {9,8,7}
-    };
-
-    calc.displayMatrix(calc.multiplyMatrix(matrixA, matrixB));
-    return 0;
-}
