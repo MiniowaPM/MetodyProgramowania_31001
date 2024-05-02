@@ -29,14 +29,22 @@ public:
 					if (selectedCol == i and selectedRow == j) {
 						float value;
 						cin >> value;
-						matrix.data[j][i] = value;
 						cin.ignore();
+						if (typeid(value) == typeid(float)) {
+							matrix.data[j][i] = value;
+						}
+						else {
+							cout << "Wprowadzono wartość o nie poprawnym typie danych";
+							cin;
+							cin.ignore();
+							return;
+						}
 					}
 				}
 			}
 		}
 		else{
-			cout << "Źle wprowadzone dane";
+			cout << "Źle wprowadzone dane. Nie istnieje taka komórka.";
 		}
 	};
 	// Funkcja wprowadzająca dane do wybranej macierzy
@@ -46,8 +54,16 @@ public:
 				float value;
 				cout << "Pozycja " << j + 1 << "x" << i + 1 << " : ";
 				cin >> value;
-				matrix.data[j][i] = value;
 				cin.ignore();
+				if (typeid(value) == typeid(float)) {
+					matrix.data[j][i] = value;
+				}
+				else {
+					cout << "Wprowadzono wartość o nie poprawnym typie danych";
+					cin;
+					cin.ignore();
+					return;
+				}
 			}
 		}
 	}
@@ -144,7 +160,12 @@ public:
 					cin >> inputName;
 					cin.ignore();
 					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
-					insertIntoMatrix(*selectedMatrix);
+					if (typeid(*selectedMatrix) == typeid(Matrix)) {
+						insertIntoMatrix(*selectedMatrix);
+					}
+					else {
+						cout << "\nNie istnieje macierz o tej nazwie.";
+					}
 					break;
 				}
 				case 5: {
@@ -161,7 +182,14 @@ public:
 					cin >> selectedCol;
 					cin.ignore();
 					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
-					editMatrix(*selectedMatrix, selectedRow - 1, selectedCol - 1);
+					if (typeid(selectedCol) == typeid(int) and typeid(selectedRow) == typeid(int) and typeid(*selectedMatrix) == typeid(Matrix)){
+						editMatrix(*selectedMatrix, selectedRow - 1, selectedCol - 1);
+					}
+					else {
+						cout << "Wprowadzono nie prawidłowy typ danych rzędu lub/i kolumny lub nie istnieje macierz o tej nazwie";
+						cin;
+						cin.ignore();
+					}
 					break;
 				}
 				case 6: {
@@ -189,7 +217,7 @@ public:
 					break;
 				}
 				case 9: {
-					return;
+					exit(0);
 				}
 				default:
 					cout << "Nieprawidłowy wybór. Proszę wybrać jeden z istniejących";
@@ -251,7 +279,12 @@ public:
 					cin >> inputName;
 					cin.ignore();
 					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
-					calc.displayMatrix(*selectedMatrix);
+					if (typeid(*selectedMatrix) == typeid(Matrix)) {
+						calc.displayMatrix(*selectedMatrix);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tej nazwie.";
+					}
 					cin;
 					cin.ignore();
 					break;
@@ -267,8 +300,13 @@ public:
 					cin.ignore();
 					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
 					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
-					Matrix result = calc.addMatrix(*selectedMatrixA, *selectedMatrixB);
-					saveDisplayResult(result);
+					if (typeid(*selectedMatrixA) == typeid(Matrix) and typeid(*selectedMatrixB) == typeid(Matrix)) {
+						Matrix result = calc.addMatrix(*selectedMatrixA, *selectedMatrixB);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 3: {
@@ -283,8 +321,13 @@ public:
 					cin.ignore();
 					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
 					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
-					Matrix result = calc.subtractMatrix(*selectedMatrixA, *selectedMatrixB);
-					saveDisplayResult(result);
+					if (typeid(*selectedMatrixA) == typeid(Matrix) and typeid(*selectedMatrixB) == typeid(Matrix)) {
+						Matrix result = calc.subtractMatrix(*selectedMatrixA, *selectedMatrixB);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 4: {
@@ -299,8 +342,13 @@ public:
 					cin.ignore();
 					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
 					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
-					Matrix result = calc.multiplyMatrix(*selectedMatrixA, *selectedMatrixB);
-					saveDisplayResult(result);
+					if (typeid(*selectedMatrixA) == typeid(Matrix) and typeid(*selectedMatrixB) == typeid(Matrix)) {
+						Matrix result = calc.multiplyMatrix(*selectedMatrixA, *selectedMatrixB);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 5: {
@@ -313,9 +361,14 @@ public:
 					cout << "Wprowadź liczbę przez którą chcesz pomnorzyć macierz: ";
 					cin >> multiplier;
 					cin.ignore();
-					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					Matrix result = calc.multiplyMatrix(*selectedMatrixA, multiplier);
-					saveDisplayResult(result);
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					if (typeid(*selectedMatrix) == typeid(Matrix) and typeid(multiplier) == typeid(int)) {
+						Matrix result = calc.multiplyMatrix(*selectedMatrix, multiplier);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 6: {
@@ -328,9 +381,14 @@ public:
 					cout << "Wprowadź potęge macierzy: ";
 					cin >> power;
 					cin.ignore();
-					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					Matrix result = calc.powerOfMatrix(*selectedMatrixA, power);
-					saveDisplayResult(result);
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					if (typeid(*selectedMatrix) == typeid(Matrix) and typeid(power) == typeid(int)) {
+						Matrix result = calc.powerOfMatrix(*selectedMatrix, power);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 7: {
@@ -339,9 +397,14 @@ public:
 					cout << "Wprowadz nazwę macierzy: ";
 					cin >> matrixA;
 					cin.ignore();
-					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					Matrix result = calc.transposeMatrix(*selectedMatrixA);
-					saveDisplayResult(result);
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					if (typeid(*selectedMatrix) == typeid(Matrix)) {
+						Matrix result = calc.transposeMatrix(*selectedMatrix);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tych nazwach.";
+					}
 					break;
 				}
 				case 8: {
@@ -351,7 +414,12 @@ public:
 					cin >> matrixA;
 					cin.ignore();
 					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					cout << "Wyznacznik macierzy: " << calc.detMatrix(*selectedMatrixA);
+					if (typeid(selectedMatrixA) == typeid(Matrix)) {
+						cout << "Wyznacznik macierzy: " << calc.detMatrix(*selectedMatrixA);
+					}
+					else {
+						cout << "Nie istnieje macierz o tej nazwie.";
+					}
 					cin;
 					cin.ignore();
 					break;
@@ -361,9 +429,14 @@ public:
 					cout << "\tOblicz macierz odwrotną\n\n";
 					cin >> matrixA;
 					cin.ignore();
-					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					Matrix result = calc.inverseMatrix(*selectedMatrixA);
-					saveDisplayResult(result);
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					if (typeid(*selectedMatrix) == typeid(Matrix)) {
+						Matrix result = calc.inverseMatrix(*selectedMatrix);
+						saveDisplayResult(result);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tej nazwie.";
+					}
 					break;
 				}
 				case 10: {
@@ -372,8 +445,13 @@ public:
 					cout << "Wprowadz nazwę macierzy: ";
 					cin >> matrixA;
 					cin.ignore();
-					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
-					cout << "Wyznacznik macierzy: " << calc.rankMatrix(*selectedMatrixA);
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					if (typeid(*selectedMatrix) == typeid(Matrix)) {
+						cout << "Wyznacznik macierzy: " << calc.rankMatrix(*selectedMatrix);
+					}
+					else {
+						cout << "\nNie znaleźono macierzy o tej nazwie.";
+					}
 					cin;
 					cin.ignore();
 					break;
@@ -384,6 +462,7 @@ public:
 				}
 				default: {
 					cout << "Nieprawidłowy wybór. Proszę wybrać jeden z istniejących";
+					break;
 				}
 			}
 		}
