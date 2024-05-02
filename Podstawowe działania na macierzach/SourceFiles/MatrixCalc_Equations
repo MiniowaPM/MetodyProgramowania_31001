@@ -5,11 +5,13 @@ using namespace std;
 
 // Struktura macierzy
 struct Matrix {
+    string name;
     int rows;
     int cols;
     vector<vector<float>> data;
 
     Matrix(int rows, int cols) : rows(rows), cols(cols), data(rows, vector<float> (cols)) {};
+    Matrix(string name, int rows, int cols) : name(name), rows(rows), cols(cols), data(rows, vector<float>(cols)) {};
 };
 
 class matrixEquations {
@@ -64,7 +66,7 @@ public:
         }
     };
     // Mnożenie macierzy przez stałą watrość
-    Matrix multuplyMatrix(Matrix& matrix, int value) {
+    Matrix multiplyMatrix(Matrix& matrix, float value) {
         Matrix resultMatrix(matrix.rows, matrix.cols);
         for (int i = 0; i < matrix.rows; i++) {
             for (int j = 0; j < matrix.cols; j++) {
