@@ -2,41 +2,398 @@
 
 class ConsoleMenu {
 public:
-	// Funkcja tworząca nową macierz
-	void createMatrix(string matrixName, int rows, int cols){
+	matrixEquations calc;
+	vector<Matrix> matrices;
 
+	// Funkcja pustą tworząca nową macierz
+	void createMatrix(string name, int rows, int cols){
+		Matrix matrix(name, rows, cols);
+		matrix.data.assign(rows, vector<float>(cols, 0.0));
+		matrices.push_back(matrix);
 	};
+	// Szybki zapis macierzy
+	void quickSaveMatrix(Matrix& curMatrix, string name) {
+		Matrix matrix(name, curMatrix.rows, curMatrix.cols);
+		matrix.data = curMatrix.data;
+		matrices.push_back(matrix);
+	}
 	// Funkcja kopiująca macierz z A do B
-	void copyMatrix(Matrix& matrix) {
-
+	void copyMatrix(Matrix& matrixA, Matrix& matrixB) {
+		matrixB = matrixA;
 	};
 	// Funkcja zmiany wartości danej macierzy
-	void editMatrix() {
-
+	void editMatrix(Matrix& matrix, int selectedRow, int selectedCol) {
+		if (selectedCol <= matrix.cols and selectedRow <= matrix.rows){
+			for (int i = 0; i < matrix.cols; i++) {
+				for (int j = 0; j < matrix.rows; j++) {
+					if (selectedCol == i and selectedRow == j) {
+						float value;
+						cin >> value;
+						matrix.data[j][i] = value;
+						cin.ignore();
+					}
+				}
+			}
+		}
+		else{
+			cout << "Źle wprowadzone dane";
+		}
 	};
+	// Funkcja wprowadzająca dane do wybranej macierzy
+	void insertIntoMatrix(Matrix& matrix) {
+		for (int i = 0; i < matrix.cols; i++) {
+			for (int j = 0; j < matrix.rows; j++) {
+				float value;
+				cout << "Pozycja " << j + 1 << "x" << i + 1 << " : ";
+				cin >> value;
+				matrix.data[j][i] = value;
+				cin.ignore();
+			}
+		}
+	}
 	// Funkcaj wyświetlająca nazwy stworzonych macierzy
 	void listMatrices() {
-
+		if (matrices.empty()) {
+			cout << "Brak macierzy w magazynie \n";
+		}
+		else {
+			cout << "Lista macierzy w magazynie: \n";
+			for (auto& matrix : matrices) {
+				cout << "\tNazwa: " << matrix.name << ", Rozmiar: " << matrix.rows << "x" << matrix.cols << "\n";
+			}
+		}
 	};
 	// Funkcja usuwająca pojedynczy macierz
-	void deleteMatrix() {
-
-	};
-	// Funkcja usuwająca wszystkie macierze
-	void deleteMatraces() {
-
+	void deleteMatrix(string name) {
+		for (auto i = matrices.begin(); i != matrices.end(); ++i) {
+			if (i->name == name){
+				matrices.erase(i);
+				cout << "Macierz o nazwie '" << name << "' została usunięta.";
+				return;
+			}
+		}
+		cout << "Macierz o nazwie '" << name << "' nie istnieje. Proszę wprowadzić prawidłową nazwę.";
 	};
 	// Main Menu
 	void mainMenu() {
-
+		while (true) {
+			system("cls");
+			cout << "Kalkulator macierzy\n\nWybierz jedną z poniższych opcji:\n";
+			cout << "1. Stwórz macierz\n";
+			cout << "2. Wyświetl listę nazw zapisanych macierzy\n";
+			cout << "3. Skopiuj macierz\n";
+			cout << "4. Wprowadz dane do macierza\n";
+			cout << "5. Edytuj dane w macierzu\n";
+			cout << "6. Usuń pojedynczą macierz z magazynu\n";
+			cout << "7. Usuń wszystkie macierz z magazynu\n";
+			cout << "8. Działania na macierzach\n";
+			cout << "9. Zakończ działanie programu\n\n";
+			cout << "Wybór: ";
+			int usrInput = -1;
+			cin >> usrInput;
+			cin.ignore();
+			system("cls");
+			switch (usrInput) {
+				case 1: {
+					int inputRow = -1, inputCol = -1;
+					string inputName;
+					cout << "Wprowadź nazwę macierzy: ";
+					cin >> inputName;
+					cin.ignore();
+					while (inputCol < 0 and inputRow < 0){
+						cout << "Wprowadź wymiary macierzy\n\tWporwadź ilość rzędów: ";
+						cin >> inputRow;
+						cin.ignore();
+						cout << "\tWporwadź ilość kolumn: ";
+						cin >> inputCol;
+						cin.ignore();
+					}
+					createMatrix(inputName, inputRow, inputCol);
+					break;
+				}
+				case 2: {
+					listMatrices();
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 3: {
+					string inputNameA, inputNameB;
+					cout << "Wprowadź nazwę macierzy, którą chcesz skopiować: ";
+					cin >> inputNameA;
+					cin.ignore();
+					cout << "\nWprowadź nazwę macierzy, do którego chcesz skopiować: ";
+					cin >> inputNameB;
+					cin.ignore();
+					auto source = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputNameA; });
+					auto target = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputNameB; });
+					if (source != matrices.end() and target != matrices.end()) {
+						copyMatrix(*source, *target);
+						cout << "\nMacierz została skopiowana.";
+					}
+					else{
+						cout << "\nNie znaleźono tych macierzy.";
+					}
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 4: {
+					string inputName;
+					cout << "Wprowaź nazwę macierza, do którego chcesz wprowadzić dane: ";
+					cin >> inputName;
+					cin.ignore();
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
+					insertIntoMatrix(*selectedMatrix);
+					break;
+				}
+				case 5: {
+					int selectedRow, selectedCol;
+					string inputName;
+					cout << "Wprowaź nazwę macierza, który chcesz edytować: ";
+					cin >> inputName;
+					cin.ignore();
+					cout << "Wprowadź pozycję macierzu którą chcesz edytować";
+					cout << "\n\tWprowadz rząd: ";
+					cin >> selectedRow;
+					cin.ignore();
+					cout << "\tWprowadz kolumnę: ";
+					cin >> selectedCol;
+					cin.ignore();
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
+					editMatrix(*selectedMatrix, selectedRow - 1, selectedCol - 1);
+					break;
+				}
+				case 6: {
+					string inputName;
+					cout << "Wybierz macierz, którą chcesz usunąć: ";
+					cin >> inputName;
+					cin.ignore();
+					deleteMatrix(inputName);
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 7: {
+					string inputChoise;
+					cout << "Czy na pewno chcesz usunąć wszystkie macierze?! (TAK/tak): ";
+					cin >> inputChoise;
+					cin.ignore();
+					if (inputChoise == "TAK" or inputChoise == "tak") {
+						matrices.clear();
+					}
+					break;
+				}
+				case 8: {
+					equationsMenu();
+					break;
+				}
+				case 9: {
+					return;
+				}
+				default:
+					cout << "Nieprawidłowy wybór. Proszę wybrać jeden z istniejących";
+					break;
+			};
+		};
+	};
+	// Funkcja save/display result
+	void saveDisplayResult(Matrix result) {
+		cout << "1. Zapisz wynik na nowej macierzy\n";
+		cout << "2. Wyświetl wynik\n";
+		cout << "Wybierz działanie, które chcesz przeprowadzić: ";
+		int displayChoise = -1;
+		cin >> displayChoise;
+		cin.ignore();
+		if (displayChoise == 1) {
+			cout << "Wprowadź nazwę macierzy zawierającej wynik tego obliczenia: ";
+			string resultName;
+			cin >> resultName;
+			cin.ignore();
+			quickSaveMatrix(result, resultName);
+			cout << "Wynik został zapisany na macierzy " << resultName;
+		}
+		else if (displayChoise == 2) {
+			calc.displayMatrix(result);
+		}
+		else {
+			cout << "Nieprawidłowy wybór. Proszę wybrać jeden z istniejących";
+		}
+		cin;
+		cin.ignore();
 	};
 	// Menu działań
 	void equationsMenu() {
+		while (true){
+			system("cls");
+			cout << "Kalkulator macierzy\n\n";
 
+			cout << "1. Wyświetl macierz\n";
+			cout << "2. Dodaj macierze\n";
+			cout << "3. Odejmij macierze\n";
+			cout << "4. Przemnórz macierze\n";
+			cout << "5. Przemnórz macierz przez wartość\n";
+			cout << "6. Potęgowanie macierzy\n";
+			cout << "7. Wyświetl macierz transponowaną\n";
+			cout << "8. Wyświetl wyznacznik macierzy\n";
+			cout << "9. Oblicz macierz odwrotną\n";
+			cout << "10. Wyświetl macierz rzędu\n";
+			cout << "11. Wróć do menu głównego\n";
+
+			cout << "Wybierz działanie, które chcesz przeprowadzić: ";
+			int usrInput = -1;
+			cin >> usrInput;
+			system("cls");
+			switch (usrInput) {
+				case 1: {
+					cout << "Wyświetl macierz, którą chcesz wyświetlć: ";
+					string inputName;
+					cin >> inputName;
+					cin.ignore();
+					auto selectedMatrix = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == inputName; });
+					calc.displayMatrix(*selectedMatrix);
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 2: {
+					string matrixA, matrixB;
+					cout << "\tDodawanie macierzy \n\n";
+					cout << "Wprowadz pierwszą macierz: ";
+					cin >> matrixA;
+					cin.ignore();
+					cout << "Wprowadź drugą macierz: ";
+					cin >> matrixB;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
+					Matrix result = calc.addMatrix(*selectedMatrixA, *selectedMatrixB);
+					saveDisplayResult(result);
+					break;
+				}
+				case 3: {
+					string matrixA, matrixB;
+					int displayChoise = -1;
+					cout << "\tOdejmowanie macierzy \n\n";
+					cout << "Wprowadz pierwszą macierz: ";
+					cin >> matrixA;
+					cin.ignore();
+					cout << "Wprowadź drugą macierz: ";
+					cin >> matrixB;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
+					Matrix result = calc.subtractMatrix(*selectedMatrixA, *selectedMatrixB);
+					saveDisplayResult(result);
+					break;
+				}
+				case 4: {
+					string matrixA, matrixB;
+					int displayChoise = -1;
+					cout << "\tPrzemnórz macierze \n\n";
+					cout << "Wprowadz pierwszą macierz: ";
+					cin >> matrixA;
+					cin.ignore();
+					cout << "Wprowadź drugą macierz: ";
+					cin >> matrixB;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					auto selectedMatrixB = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixB; });
+					Matrix result = calc.multiplyMatrix(*selectedMatrixA, *selectedMatrixB);
+					saveDisplayResult(result);
+					break;
+				}
+				case 5: {
+					string matrixA;
+					float multiplier;
+					cout << "\tPrzemnórz macierze \n\n";
+					cout << "Wprowadz nazwę macierzy: ";
+					cin >> matrixA;
+					cin.ignore();
+					cout << "Wprowadź liczbę przez którą chcesz pomnorzyć macierz: ";
+					cin >> multiplier;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					Matrix result = calc.multiplyMatrix(*selectedMatrixA, multiplier);
+					saveDisplayResult(result);
+					break;
+				}
+				case 6: {
+					string matrixA;
+					int power;
+					cout << "\tPotęgowanie macierzy\n\n";
+					cout << "Wprowadz nazwę macierzy: ";
+					cin >> matrixA;
+					cin.ignore();
+					cout << "Wprowadź potęge macierzy: ";
+					cin >> power;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					Matrix result = calc.powerOfMatrix(*selectedMatrixA, power);
+					saveDisplayResult(result);
+					break;
+				}
+				case 7: {
+					string matrixA;
+					cout << "\tWyświetl macierz transponowaną\n\n";
+					cout << "Wprowadz nazwę macierzy: ";
+					cin >> matrixA;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					Matrix result = calc.transposeMatrix(*selectedMatrixA);
+					saveDisplayResult(result);
+					break;
+				}
+				case 8: {
+					string matrixA;
+					cout << "\tWyświetl wyznacznik macierzy\n\n";
+					cout << "Wprowadz nazwę macierzy: ";
+					cin >> matrixA;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					cout << "Wyznacznik macierzy: " << calc.detMatrix(*selectedMatrixA);
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 9: {
+					string matrixA;
+					cout << "\tOblicz macierz odwrotną\n\n";
+					cin >> matrixA;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					Matrix result = calc.inverseMatrix(*selectedMatrixA);
+					saveDisplayResult(result);
+					break;
+				}
+				case 10: {
+					string matrixA;
+					cout << "\tWyświetl macierz rzędu\n\n";
+					cout << "Wprowadz nazwę macierzy: ";
+					cin >> matrixA;
+					cin.ignore();
+					auto selectedMatrixA = find_if(matrices.begin(), matrices.end(), [&](const Matrix& matrix) { return matrix.name == matrixA; });
+					cout << "Wyznacznik macierzy: " << calc.rankMatrix(*selectedMatrixA);
+					cin;
+					cin.ignore();
+					break;
+				}
+				case 11: {
+					mainMenu();
+					break;
+				}
+				default: {
+					cout << "Nieprawidłowy wybór. Proszę wybrać jeden z istniejących";
+				}
+			}
+		}
 	};
 };
 
 int main() {
-
+	setlocale(LC_ALL, "pl_PL");
+	system("cls");
+	ConsoleMenu menu;
+	menu.mainMenu();
 	return 0;
 };
