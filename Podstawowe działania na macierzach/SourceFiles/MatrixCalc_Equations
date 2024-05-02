@@ -114,7 +114,7 @@ public:
                     // Funkcja pomocnicza tworząca pod macierz o stopień niższą
                     Matrix subMatrix = findSubMatrix(matrix, rowNum, colNum);
                     determinant = detMatrix(subMatrix);
-                    cumulativeSum += matrix.data[0][colNum] * determinant * sign; // colNum przekracza wartość 
+                    cumulativeSum += matrix.data[0][colNum] * determinant * sign;
                     sign = -sign;
                 }
             }
@@ -149,12 +149,17 @@ public:
         }
         return resultMatrix;
     };
-    // Rząd macierzu - DO ZROBIENIA
+    // Rząd macierzu - Dla macierzy kwadratowej
     int rankMatrix(Matrix& matrix) {
-        int rank = 0;
-        for (int i = 0; i < matrix.rows; i++){
-            for (int j = 0; j < matrix.cols; j++){
-
+        float determinant;
+        for (int colNum = 0; colNum < matrix.cols; colNum++) {
+            for (int rowNum = 0; rowNum < matrix.rows; rowNum++) {
+                // Funkcja pomocnicza tworząca pod macierz o stopień niższą
+                Matrix subMatrix = findSubMatrix(matrix, rowNum, colNum);
+                determinant = detMatrix(subMatrix);
+                if (determinant != 0) {
+                    return subMatrix.cols;
+                }
             }
         }
     };
