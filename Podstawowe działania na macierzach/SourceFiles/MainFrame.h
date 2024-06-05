@@ -18,6 +18,8 @@ public:
     void OnButtonClickedMatFunc(wxCommandEvent& evt);
     void OnButtonClickedDrop(wxCommandEvent& evt);
     void OnButtonClickedSaveMatrix(wxCommandEvent& evt);
+    void OnButtonClickedImport(wxCommandEvent& evt);
+    void OnButtonClickedExport(wxCommandEvent& evt);
     // Create Input objects
     void CreateSingleMatrixInput();
     void CreateDualMatrixInput();
@@ -45,6 +47,10 @@ public:
     void QuickSaveHandler(wxCommandEvent& evt);
     void DisplayValueResult(float FloatResult, std::string matrixName);
     void DisplayValueResult(int IntResult, std::string matrixName);
+    // Import Export handlers
+    
+    // Validator and Error handlers
+    void ErrorMessageHandler(std::string errorMessage);
 
     MatrixEquations matrixEquations;
     wxPanel* mainScreenLeft;
@@ -64,9 +70,3 @@ public:
     wxTextCtrl* newMatrixName;
     wxDECLARE_EVENT_TABLE();
 };
-
-/*
-BUGLIST:
-    matrixEquationInputChoice in OnButtonClickedMatFunc() NOT DELETING in ClearMainPanels()
-    When matrixChoice is nullptr - crashes
-*/ 

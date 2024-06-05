@@ -82,6 +82,11 @@ MainFrame::MainFrame(const wxString& title) : wxFrame(nullptr, wxID_ANY, title),
 	wxButton* buttonEdit = loadAndDisplayButtons(toolBar, BUTTON_ID_EDIT, "icons/edit.png", "Edit Matrix", wxPoint(300, 0));
 	wxButton* buttonMatFunc = loadAndDisplayButtons(toolBar, BUTTON_ID_MATFUNC, "icons/mat_func.png", "Mathematical Functions", wxPoint(400, 0));
 	wxButton* buttonDrop = loadAndDisplayButtons(toolBar, BUTTON_ID_DROP, "icons/delete.png", "Drop Matrix", wxPoint(500, 0));
+	wxButton* buttonImport = loadAndDisplayButtons(toolBar, wxID_ANY, "icons/import.png", "Import Matrix", wxPoint(600, 0));
+	wxButton* buttonExport = loadAndDisplayButtons(toolBar, wxID_ANY, "icons/export.png", "Export Matrix", wxPoint(700, 0));
+
+	buttonImport->Bind(wxEVT_BUTTON, &MainFrame::OnButtonClickedImport, this);
+	buttonExport->Bind(wxEVT_BUTTON, &MainFrame::OnButtonClickedExport, this);
 
 	// ListBar Panel section
 	listView = new wxListView(listBar, wxID_ANY, wxDefaultPosition, wxSize(-1, 900));
@@ -160,13 +165,20 @@ void MainFrame::OnButtonClickedCreate(wxCommandEvent& evt) {
 				wxString newMatrixColsTemp = dialog.GetValue();
 				// Converting data from wxString
 				std::string newMatrixName = std::string(newMatrixNameTemp.mb_str());
-				int newMatrixRows = wxAtoi(newMatrixRowsTemp);
-				int newMatrixCols = wxAtoi(newMatrixColsTemp);
-				Matrix newMatrix = matrixEquations.createMatrix(newMatrixName, newMatrixRows, newMatrixCols);
-				selectedMatrix = matrixEquations.getMatrixByName(newMatrixName);
-				DisplayReadDataPanel(newMatrix);
-				wxLogStatus("Matrix has been created");
-				loadListView();
+				/*if (isMatrixNameTaken(newMatrixName)){*/
+				if (matrixEquations.getMatrixByName(newMatrixName) == nullptr) {
+					int newMatrixRows = wxAtoi(newMatrixRowsTemp);
+					int newMatrixCols = wxAtoi(newMatrixColsTemp);
+					Matrix newMatrix = matrixEquations.createMatrix(newMatrixName, newMatrixRows, newMatrixCols);
+					selectedMatrix = matrixEquations.getMatrixByName(newMatrixName);
+					DisplayReadDataPanel(newMatrix);
+					wxLogStatus("Matrix has been created");
+					loadListView();
+				}
+				else {
+					std::string errorMess = newMatrixName + " is already taken.";
+					ErrorMessageHandler(errorMess);
+				}
 			}
 		}
 	}
@@ -174,7 +186,6 @@ void MainFrame::OnButtonClickedCreate(wxCommandEvent& evt) {
 		wxLogStatus("The operation was interrupted");
 	};
 };
-
 void MainFrame::OnButtonClickedDelete(wxCommandEvent& evt) {
 	wxLogStatus("Delete function initialized");
 	ClearMainPanels();
@@ -204,7 +215,6 @@ void MainFrame::OnButtonClickedDelete(wxCommandEvent& evt) {
 		}
 	}
 };
-
 void MainFrame::OnButtonClickedCopy(wxCommandEvent& evt) {
 	wxLogStatus("Copy function initialized");
 	auto result = wxMessageBox("Do you want to copy this matrix", "Coping matrix", wxOK | wxCANCEL | wxICON_INFORMATION);
@@ -221,12 +231,18 @@ void MainFrame::OnButtonClickedCopy(wxCommandEvent& evt) {
 					if (dialog.ShowModal() == wxID_OK) {
 						wxString newMatrixNameInput = dialog.GetValue();
 						std::string matrixBName = std::string(newMatrixNameInput.mb_str());
-						wxLogStatus(wxString::Format("Selected item index: %ld", selectedItem));
-						wxString matrixNameInput = listView->GetItemText(selectedItem, 1);
-						std::string matrixAName = std::string(matrixNameInput.mb_str());
-						Matrix* matrixA = matrixEquations.getMatrixByName(matrixAName);
-						selectedMatrix = matrixEquations.getMatrixByName(matrixAName);
-						matrixEquations.copyMatrix(*matrixA, matrixBName);
+						if (matrixEquations.getMatrixByName(matrixBName) == nullptr){
+							wxLogStatus(wxString::Format("Selected item index: %ld", selectedItem));
+							wxString matrixNameInput = listView->GetItemText(selectedItem, 1);
+							std::string matrixAName = std::string(matrixNameInput.mb_str());
+							Matrix* matrixA = matrixEquations.getMatrixByName(matrixAName);
+							selectedMatrix = matrixEquations.getMatrixByName(matrixAName);
+							matrixEquations.copyMatrix(*matrixA, matrixBName);
+						}
+						else {
+							std::string errorMess = matrixBName + " is already taken.";
+							ErrorMessageHandler(errorMess);
+						}
 						loadListView();
 					}
 				}
@@ -240,7 +256,6 @@ void MainFrame::OnButtonClickedCopy(wxCommandEvent& evt) {
 		}
 	}
 };
-
 void MainFrame::OnButtonClickedEdit(wxCommandEvent& evt) {
 	ClearMainPanels();
 	wxLogStatus("Edit function initialized");
@@ -270,7 +285,6 @@ void MainFrame::OnButtonClickedEdit(wxCommandEvent& evt) {
 		}
 	}
 };
-
 void MainFrame::OnButtonClickedSaveMatrix(wxCommandEvent& evt) {
 
 	int rows = grid->GetNumberRows();
@@ -291,7 +305,6 @@ void MainFrame::OnButtonClickedSaveMatrix(wxCommandEvent& evt) {
 		ClearMainPanels();
 	}
 };
-
 void MainFrame::DisplayReadDataPanel(Matrix& matrix) {
 	std::vector<std::vector<float>> data;
 	// MainPanel section
@@ -310,8 +323,18 @@ void MainFrame::DisplayReadDataPanel(Matrix& matrix) {
 	for (int i = 0; i < matrix.rows; ++i) {
 		for (int j = 0; j < matrix.cols; ++j) {
 			grid->SetCellValue(i, j, std::to_string(matrix.data[i][j]));
+			grid->SetCellEditor(i, j, new wxGridCellFloatEditor());
+			grid->SetCellRenderer(i, j, new wxGridCellFloatRenderer(-1,2));
 		}
 	}
+
+	wxBoxSizer* gridSizer = new wxBoxSizer(wxVERTICAL);
+	gridSizer->Add(grid, 1, wxEXPAND | wxALL, 5);
+
+	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
+	mainSizer->Add(gridSizer, 1, wxEXPAND);
+
+	mainScreenRight->SetSizer(mainSizer);
 
 	wxButton* saveButton = new wxButton(mainScreenLeft, BUTTON_ID_SAVE, "Submit Matrix", wxDefaultPosition);
 
@@ -323,7 +346,6 @@ void MainFrame::DisplayReadDataPanel(Matrix& matrix) {
 
 	Layout();
 };
-
 void MainFrame::OnButtonClickedMatFunc(wxCommandEvent& evt) {
 	wxLogStatus("MatFunc function initialized");
 	// MatFuncPanel Layout Section
@@ -348,13 +370,20 @@ void MainFrame::OnButtonClickedMatFunc(wxCommandEvent& evt) {
 
 	Layout();
 };
-
 void MainFrame::OnButtonClickedDrop(wxCommandEvent& evt) {
 	auto result = wxMessageBox("Do you want to delete EVERY matrix", "Deleting matrix", wxOK | wxCANCEL | wxICON_INFORMATION);
 	if (result == wxOK) {
 		Matrices.clear();
 		loadListView();
 	}
+};
+void MainFrame::OnButtonClickedImport(wxCommandEvent& evt) {
+	wxLogStatus("Import function initialized");
+
+};
+void MainFrame::OnButtonClickedExport(wxCommandEvent& evt) {
+	wxLogStatus("Export function initialized");
+
 };
 
 void MainFrame::CreateSingleMatrixInput() {
@@ -543,9 +572,19 @@ void MainFrame::DisplayAddMatrixResult(wxCommandEvent& evt) {
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 	Matrix* matrixB = matrixEquations.getMatrixByName(matrixBstring);
 
-	Matrix matrixResult = matrixEquations.addMatrix(*matrixA, *matrixB);
+	if (matrixA != nullptr && matrixB != nullptr){
+		Matrix matrixResult = matrixEquations.addMatrix(*matrixA, *matrixB);
+		if (matrixResult.name != "matrixReadFail") {
+			DisplayMatrixResult(matrixResult);
+		}
+		else {
+			ErrorMessageHandler("Invalid matrix sizes. Sizes has to be equal.");
+		}
+	}
+	else{
+		ErrorMessageHandler("Invalid matrix value");
+	}
 
-	DisplayMatrixResult(matrixResult);
 };
 void MainFrame::DisplaySubMatrixResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplaySubMatrixResult");
@@ -558,10 +597,19 @@ void MainFrame::DisplaySubMatrixResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 	Matrix* matrixB = matrixEquations.getMatrixByName(matrixBstring);
-
 	Matrix matrixResult = matrixEquations.subtractMatrix(*matrixA, *matrixB);
 
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr && matrixB != nullptr) {
+		if (matrixResult.name != "matrixReadFail") {
+			DisplayMatrixResult(matrixResult);
+		}
+		else {
+			ErrorMessageHandler("Invalid matrix sizes. Sizes has to be equal.");
+		}
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayMultiplyByMatrixResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayMultiplyByMatrixResult");
@@ -575,9 +623,18 @@ void MainFrame::DisplayMultiplyByMatrixResult(wxCommandEvent& evt) {
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 	Matrix* matrixB = matrixEquations.getMatrixByName(matrixBstring);
 
-	Matrix matrixResult = matrixEquations.multiplyMatrix(*matrixA, *matrixB);
-
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr && matrixB != nullptr) {
+		Matrix matrixResult = matrixEquations.multiplyMatrix(*matrixA, *matrixB);
+		if (matrixResult.name != "matrixReadFail") {
+			DisplayMatrixResult(matrixResult);
+		}
+		else {
+			ErrorMessageHandler("Invalid matrix sizes. First matrix column size has to be equal to the second matrix row size.");
+		}
+	}
+	else {
+			ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayMultiplyByValueResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayMultiplyByValueResult");
@@ -591,9 +648,13 @@ void MainFrame::DisplayMultiplyByValueResult(wxCommandEvent& evt) {
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 	float floatValue = (float)doubleValue;
 
-	Matrix matrixResult = matrixEquations.multiplyMatrix(*matrixA, floatValue);
-
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr) {
+		Matrix matrixResult = matrixEquations.multiplyMatrix(*matrixA, floatValue);
+		DisplayMatrixResult(matrixResult);
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayPowerOfMatrixResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayPowerOfMatrixResult");
@@ -605,9 +666,13 @@ void MainFrame::DisplayPowerOfMatrixResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 
-	Matrix matrixResult = matrixEquations.powerOfMatrix(*matrixA, intValue);
-
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr) {
+		Matrix matrixResult = matrixEquations.powerOfMatrix(*matrixA, intValue);
+		DisplayMatrixResult(matrixResult);
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayTransposeResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayTransposeResult");
@@ -617,9 +682,13 @@ void MainFrame::DisplayTransposeResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 
-	Matrix matrixResult = matrixEquations.transposeMatrix(*matrixA);
-
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr) {
+		Matrix matrixResult = matrixEquations.transposeMatrix(*matrixA);
+		DisplayMatrixResult(matrixResult);
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayDeterminantResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayDeterminantResult");
@@ -629,9 +698,18 @@ void MainFrame::DisplayDeterminantResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 
-	float FloatResult = matrixEquations.detMatrix(*matrixA);
-
-	DisplayValueResult(FloatResult, matrixAstring);
+	if (matrixA != nullptr) {
+		float FloatResult = matrixEquations.detMatrix(*matrixA);
+		if (FloatResult != 9999) {
+			DisplayValueResult(FloatResult, matrixAstring);
+		}
+		else {
+			ErrorMessageHandler("Invalid matrix sizes. Sizes has to be equal.");
+		}
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayInverseResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayInverseResult");
@@ -641,9 +719,18 @@ void MainFrame::DisplayInverseResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 
-	Matrix matrixResult = matrixEquations.inverseMatrix(*matrixA);
-
-	DisplayMatrixResult(matrixResult);
+	if (matrixA != nullptr) {
+		Matrix matrixResult = matrixEquations.inverseMatrix(*matrixA);
+		if (matrixResult.name != "matrixReadFail") {
+			DisplayMatrixResult(matrixResult);
+		}
+		else {
+			ErrorMessageHandler("Invalid matrix sizes. Sizes has to be equal.");
+		}
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 void MainFrame::DisplayRankResult(wxCommandEvent& evt) {
 	wxLogStatus("Initialzied DisplayRankResult");
@@ -653,9 +740,13 @@ void MainFrame::DisplayRankResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 
-	int intResult = matrixEquations.rankMatrix(*matrixA);
-
-	DisplayValueResult(intResult, matrixAstring);
+	if (matrixA != nullptr) {
+		int intResult = matrixEquations.rankMatrix(*matrixA);
+		DisplayValueResult(intResult, matrixAstring);
+	}
+	else {
+		ErrorMessageHandler("Invalid matrix value");
+	}
 };
 
 void MainFrame::DisplayMatrixResult(Matrix matrix) {
@@ -666,6 +757,8 @@ void MainFrame::DisplayMatrixResult(Matrix matrix) {
 	for (int i = 0; i < matrix.rows; ++i) {
 		for (int j = 0; j < matrix.cols; ++j) {
 			grid->SetCellValue(i, j, std::to_string(matrix.data[i][j]));
+			grid->SetCellEditor(i, j, new wxGridCellFloatEditor());
+			grid->SetCellRenderer(i, j, new wxGridCellFloatRenderer(-1,2));
 		}
 	}
 
@@ -698,8 +791,13 @@ void MainFrame::QuickSaveHandler(wxCommandEvent& evt) {
 
 	wxString wxStringMatrixName = newMatrixName->GetValue();
 	std::string newMatrixNameString = std::string(wxStringMatrixName.mb_str());
-	matrixEquations.quickSaveMatrix(resultMatrix, newMatrixNameString);
-
+	if (matrixEquations.getMatrixByName(newMatrixNameString) == nullptr){
+		matrixEquations.quickSaveMatrix(resultMatrix, newMatrixNameString);
+	}
+	else {
+		std::string errorMess = newMatrixNameString + " is already taken.";
+		ErrorMessageHandler(errorMess);
+	}
 	loadListView();
 };
 void MainFrame::DisplayValueResult(float FloatResult, std::string matrixName) {
@@ -711,7 +809,14 @@ void MainFrame::DisplayValueResult(int IntResult, std::string matrixName) {
 	wxStaticText* resultData = new wxStaticText(mainScreenRight, wxID_ANY, displayInfo, wxDefaultPosition);
 };
 void MainFrame::ClearMainPanels() {
-	// Clear panel children
+	if (matrixEquationInputChoice != nullptr) {
+		matrixEquationInputChoice->Destroy();
+		matrixEquationInputChoice = nullptr;
+	}
+	if (saveDataButton != nullptr) {
+		saveDataButton->Destroy();
+		saveDataButton = nullptr;
+	}
 	wxWindowList& childrenLeft = mainScreenLeft->GetChildren();
 	while (!childrenLeft.IsEmpty()) {
 		wxWindow* child = childrenLeft.GetFirst()->GetData();
@@ -722,4 +827,8 @@ void MainFrame::ClearMainPanels() {
 		wxWindow* child = childrenRight.GetFirst()->GetData();
 		child->Destroy();
 	}
+};
+
+void MainFrame::ErrorMessageHandler(std::string errorMessage) {
+	wxLogError("An error occurred: %s", errorMessage);
 };

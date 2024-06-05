@@ -14,6 +14,8 @@ Matrix MatrixEquations::addMatrix(Matrix& matrix1, Matrix& matrix2) {
         }
         return resultMatrix;
     }
+    Matrix matrixReadFail("matrixReadFail",0,0);
+    return matrixReadFail;
 };
 
 Matrix MatrixEquations::subtractMatrix(Matrix& matrix1, Matrix& matrix2) {
@@ -26,6 +28,8 @@ Matrix MatrixEquations::subtractMatrix(Matrix& matrix1, Matrix& matrix2) {
         }
         return resultMatrix;
     }
+    Matrix matrixReadFail("matrixReadFail", 0, 0);
+    return matrixReadFail;
 };
 
 Matrix MatrixEquations::multiplyMatrix(Matrix& matrix1, Matrix& matrix2) {
@@ -40,6 +44,8 @@ Matrix MatrixEquations::multiplyMatrix(Matrix& matrix1, Matrix& matrix2) {
         }
         return resultMatrix;
     }
+    Matrix matrixReadFail("matrixReadFail", 0, 0);
+    return matrixReadFail;
 };
 
 Matrix MatrixEquations::multiplyMatrix(Matrix& matrix, float value) {
@@ -69,7 +75,7 @@ Matrix MatrixEquations::transposeMatrix(Matrix& matrix) {
     Matrix resultMatrix(matrix.cols, matrix.rows);
     for (int i = 0; i < matrix.rows; i++) {
         for (int j = 0; j < matrix.cols; j++) {
-            resultMatrix.data[i][j] = matrix.data[j][i];
+            resultMatrix.data[j][i] = matrix.data[i][j];
         }
     }
     return resultMatrix;
@@ -77,7 +83,7 @@ Matrix MatrixEquations::transposeMatrix(Matrix& matrix) {
 
 float MatrixEquations::detMatrix(Matrix& matrix) {
     if (matrix.cols != matrix.rows) {
-        return 0;
+        return 9999;
     };
     if (matrix.cols == 2) {
         return matrix.data[0][0] * matrix.data[1][1] - matrix.data[0][1] * matrix.data[1][0];
@@ -86,7 +92,6 @@ float MatrixEquations::detMatrix(Matrix& matrix) {
         float cumulativeSum = 0, sign = 1, determinant;
         for (int colNum = 0; colNum < matrix.cols; colNum++) {
             for (int rowNum = 0; rowNum < matrix.rows; rowNum++) {
-                // Funkcja pomocnicza tworz¹ca pod macierz o stopieñ ni¿sz¹
                 Matrix subMatrix = findSubMatrix(matrix, rowNum, colNum);
                 determinant = detMatrix(subMatrix);
                 cumulativeSum += matrix.data[0][colNum] * determinant * sign;
@@ -114,16 +119,26 @@ Matrix MatrixEquations::findSubMatrix(Matrix& matrix, int skipRow, int skipCol) 
 }
 
 Matrix MatrixEquations::inverseMatrix(Matrix& matrix) {
-    Matrix resultMatrix(matrix.rows, matrix.cols);
-    Matrix transposedMatrix = transposeMatrix(matrix);
-    float det = detMatrix(matrix);
-    for (int i = 0; i < matrix.rows; i++) {
-        for (int j = 0; j < matrix.cols; j++)
-        {
-            resultMatrix.data[i][j] = 1 / det * transposedMatrix.data[i][j];
+    if (matrix.cols == matrix.rows){
+        Matrix resultMatrix(matrix.rows, matrix.cols);
+        Matrix transposedMatrix = transposeMatrix(matrix);
+        float det;
+        if (matrix.cols == 1){
+            det = 1;
         }
+        else {
+            det = detMatrix(matrix);
+        }
+        for (int i = 0; i < matrix.rows; i++) {
+            for (int j = 0; j < matrix.cols; j++)
+            {
+                resultMatrix.data[i][j] = 1 / (det * transposedMatrix.data[i][j]);
+            }
+        }
+        return resultMatrix;
     }
-    return resultMatrix;
+    Matrix matrixReadFail("matrixReadFail", 0, 0);
+    return matrixReadFail;
 };
 
 int MatrixEquations::rankMatrix(Matrix& matrix) {
