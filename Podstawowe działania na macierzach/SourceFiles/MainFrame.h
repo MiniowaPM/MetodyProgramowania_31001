@@ -8,7 +8,7 @@
 class MainFrame : public wxFrame{
 public:
 	MainFrame(const wxString& title);
-
+private:
     void loadListView();
     wxButton* loadAndDisplayButtons(wxPanel* toolBar, const wxWindowID id, const wxString& imagePath, const wxString& label, const wxPoint& pointPosition);
     void OnButtonClickedCreate(wxCommandEvent& evt);
@@ -48,7 +48,8 @@ public:
     void DisplayValueResult(float FloatResult, std::string matrixName);
     void DisplayValueResult(int IntResult, std::string matrixName);
     // Import Export handlers
-    
+    void ExportMatrixToFile(std::string fileName);
+    void ImportMatrixToFile(std::string filePath);
     // Validator and Error handlers
     void ErrorMessageHandler(std::string errorMessage);
 

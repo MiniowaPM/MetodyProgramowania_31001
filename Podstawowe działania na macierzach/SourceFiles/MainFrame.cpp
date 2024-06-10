@@ -10,7 +10,8 @@
 #include <vector>
 #include <wx/grid.h>
 #include "Globals.h"
-
+#include <fstream>
+#include <sstream>
 
 enum ButtonIDs {
 	BUTTON_ID_ADD = 2,
@@ -379,11 +380,23 @@ void MainFrame::OnButtonClickedDrop(wxCommandEvent& evt) {
 };
 void MainFrame::OnButtonClickedImport(wxCommandEvent& evt) {
 	wxLogStatus("Import function initialized");
-
+	wxFileDialog openFileDialog(this, _("Open file"), "", "",
+		"All files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (openFileDialog.ShowModal() == wxID_CANCEL) {
+		return; // the user changed their mind
+	}
+	wxString wxFilePath = openFileDialog.GetPath();
+	std::string filePath = std::string(wxFilePath.c_str());
+	ImportMatrixToFile(filePath);
 };
 void MainFrame::OnButtonClickedExport(wxCommandEvent& evt) {
 	wxLogStatus("Export function initialized");
-
+	wxTextEntryDialog dialog(this, "File name: ", "Export matrices", "Export1");
+	if (dialog.ShowModal() == wxID_OK){
+		wxString wxFileName = dialog.GetValue();
+		std::string fileName = std::string(wxFileName.mb_str());
+		ExportMatrixToFile(fileName);
+	}
 };
 
 void MainFrame::CreateSingleMatrixInput() {
@@ -827,6 +840,91 @@ void MainFrame::ClearMainPanels() {
 		wxWindow* child = childrenRight.GetFirst()->GetData();
 		child->Destroy();
 	}
+};
+
+void MainFrame::ExportMatrixToFile(std::string fileName) {
+	std::ofstream file;
+	file.open(fileName + ".txt");
+	// Error handler
+	if (!file.is_open()) {
+		std::string errorMess = "Nie mo¿na otworzyæ pliku: " + fileName;
+		ErrorMessageHandler(errorMess);
+		return;
+	}
+	// Write Matrices into std::string
+	for (Matrix& matrix : Matrices) {
+		file << "Matrix name:" << matrix.name << "\n";
+		file << matrix.cols << "\n";
+		file << matrix.rows << "\n";
+		for (int i = 0; i < matrix.rows; i++){
+			for (int j = 0; j < matrix.cols; j++){
+				file << matrix.data[i][j];
+				if (j != matrix.cols - 1 or i != matrix.rows - 1){
+					file << ',';
+				}
+			}
+		}
+		file << "\n";
+	}
+	file.close();
+};
+void MainFrame::ImportMatrixToFile(std::string filePath) {
+	std::ifstream file(filePath);
+	// Error handling
+	if (!file.is_open()) {
+		std::string errorMess = "Nie mo¿na otworzyæ pliku!";
+		ErrorMessageHandler(errorMess);
+		return;
+	}
+	std::string line;
+	while (std::getline(file, line)){
+		if (line.empty()) {
+			continue;
+		}
+		if (line.substr(0, 12) == "Matrix name:") {
+			// Znaleziono now¹ macierz
+			std::string matrixName = line.substr(12);
+			int numCols, numRows;
+			std::vector<std::vector<float>> matrixData;
+
+			if (!std::getline(file, line)) {
+				std::string errorMess = "B³¹d podczas wczytywania liczby kolumn z pliku: " + filePath;
+				ErrorMessageHandler(errorMess);
+				return;
+			}
+			numCols = std::stoi(line);
+
+			if (!std::getline(file, line)) {
+				std::string errorMess = "B³¹d podczas wczytywania liczby wierszy z pliku: " + filePath;
+				ErrorMessageHandler(errorMess);
+				return;
+			}
+			numRows = std::stoi(line);
+			if (!std::getline(file, line)) {
+				std::string errorMess = "B³¹d podczas wczytywania danych macierzy z pliku: " + filePath;
+				ErrorMessageHandler(errorMess);
+				return;
+			}
+			std::stringstream stringstream(line);
+			std::string cell;
+			std::vector<float> rowData;
+			int rowIndex = 0;
+			int colIndex = 0;
+			Matrix matrix(matrixName, numRows, numCols);
+			while (std::getline(stringstream, cell, ',')) {
+				float cellValue = std::stof(cell);
+				matrix.data[rowIndex][colIndex] = cellValue;
+				colIndex++;
+				if (colIndex == numCols) {
+					colIndex = 0;
+					rowIndex++;
+				}
+			}
+			Matrices.push_back(matrix);
+		}
+	}
+	file.close();
+	loadListView();
 };
 
 void MainFrame::ErrorMessageHandler(std::string errorMessage) {
