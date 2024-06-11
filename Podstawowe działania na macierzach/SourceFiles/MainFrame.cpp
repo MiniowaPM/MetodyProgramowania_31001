@@ -113,7 +113,7 @@ wxButton* MainFrame::loadAndDisplayButtons(wxPanel* toolBar, const wxWindowID id
 	// Loading icons
 	wxImage image;
 	if (!image.LoadFile(imagePath, wxBITMAP_TYPE_PNG)){
-		wxLogError("Nie mo¿na wczytaæ obrazka z pliku '%s'.", imagePath);
+		wxLogError("Nie moÂ¿na wczytaÃ¦ obrazka z pliku '%s'.", imagePath);
 		return nullptr;
 	}
 
@@ -610,9 +610,9 @@ void MainFrame::DisplaySubMatrixResult(wxCommandEvent& evt) {
 
 	Matrix* matrixA = matrixEquations.getMatrixByName(matrixAstring);
 	Matrix* matrixB = matrixEquations.getMatrixByName(matrixBstring);
-	Matrix matrixResult = matrixEquations.subtractMatrix(*matrixA, *matrixB);
 
 	if (matrixA != nullptr && matrixB != nullptr) {
+	Matrix matrixResult = matrixEquations.subtractMatrix(*matrixA, *matrixB);
 		if (matrixResult.name != "matrixReadFail") {
 			DisplayMatrixResult(matrixResult);
 		}
@@ -847,7 +847,7 @@ void MainFrame::ExportMatrixToFile(std::string fileName) {
 	file.open(fileName + ".txt");
 	// Error handler
 	if (!file.is_open()) {
-		std::string errorMess = "Nie mo¿na otworzyæ pliku: " + fileName;
+		std::string errorMess = "Nie moÂ¿na otworzyÃ¦ pliku: " + fileName;
 		ErrorMessageHandler(errorMess);
 		return;
 	}
@@ -872,7 +872,7 @@ void MainFrame::ImportMatrixToFile(std::string filePath) {
 	std::ifstream file(filePath);
 	// Error handling
 	if (!file.is_open()) {
-		std::string errorMess = "Nie mo¿na otworzyæ pliku!";
+		std::string errorMess = "Nie moÂ¿na otworzyÃ¦ pliku!";
 		ErrorMessageHandler(errorMess);
 		return;
 	}
@@ -882,26 +882,26 @@ void MainFrame::ImportMatrixToFile(std::string filePath) {
 			continue;
 		}
 		if (line.substr(0, 12) == "Matrix name:") {
-			// Znaleziono now¹ macierz
+			// Znaleziono nowÂ¹ macierz
 			std::string matrixName = line.substr(12);
 			int numCols, numRows;
 			std::vector<std::vector<float>> matrixData;
 
 			if (!std::getline(file, line)) {
-				std::string errorMess = "B³¹d podczas wczytywania liczby kolumn z pliku: " + filePath;
+				std::string errorMess = "BÂ³Â¹d podczas wczytywania liczby kolumn z pliku: " + filePath;
 				ErrorMessageHandler(errorMess);
 				return;
 			}
 			numCols = std::stoi(line);
 
 			if (!std::getline(file, line)) {
-				std::string errorMess = "B³¹d podczas wczytywania liczby wierszy z pliku: " + filePath;
+				std::string errorMess = "BÂ³Â¹d podczas wczytywania liczby wierszy z pliku: " + filePath;
 				ErrorMessageHandler(errorMess);
 				return;
 			}
 			numRows = std::stoi(line);
 			if (!std::getline(file, line)) {
-				std::string errorMess = "B³¹d podczas wczytywania danych macierzy z pliku: " + filePath;
+				std::string errorMess = "BÂ³Â¹d podczas wczytywania danych macierzy z pliku: " + filePath;
 				ErrorMessageHandler(errorMess);
 				return;
 			}
